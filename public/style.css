@@ -25,3 +25,20 @@ button:disabled,select:disabled{opacity:.6;cursor:not-allowed}
 @keyframes guessPulse{0%{transform:scale(.92)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
 @keyframes guessShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
 @media(max-width:760px){.player-scorebar{flex-direction:column;align-items:flex-start}}
+
+/* Alineación exacta de B I N G O con las cinco columnas del cartón */
+.bingo-head,.board{
+  width:100%;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  column-gap:6px;
+}
+.bingo-head b,.board .cell{
+  width:100%;
+  min-width:0;
+  margin:0;
+}
+.bingo-head b{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
