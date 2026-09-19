@@ -1,7 +1,7 @@
-const socket=io(),$=id=>document.getElementById(id);let role=null,roomCode='',board=[],marks=new Set([12]),revealedAnswers=new Set(),installPrompt=null;let playerToken=localStorage.getItem('bingoPlayerToken')||'';let moderatorToken=localStorage.getItem('bingoModeratorToken')||'';
+const socket=io(),$=id=>document.getElementById(id);let role=null,roomCode='',board=[],marks=new Set([12]),revealedAnswers=new Set(),installPrompt=null,score=0,guessOpen=false,guessedThisClue=false;let playerToken=localStorage.getItem('bingoPlayerToken')||'';let moderatorToken=localStorage.getItem('bingoModeratorToken')||'';
 function show(id){['home','moderator','player'].forEach(x=>$(x).classList.add('hide'));$(id).classList.remove('hide')}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function renderBoard(){$('board').innerHTML='';board.forEach((t,i)=>{const b=document.createElement('button');const available=i===12||revealedAnswers.has(t);b.className='cell'+(marks.has(i)?' marked':'')+(i===12?' free':'')+(available?' available':' locked');b.textContent=t;b.onclick=()=>i!==12&&socket.emit('mark',i);$('board').appendChild(b)})}
+function renderBoard(){$('board').innerHTML='';board.forEach((t,i)=>{const b=document.createElement('button');const available=i===12||revealedAnswers.has(t);b.className='cell'+(marks.has(i)?' marked':'')+(i===12?' free':'')+(available?' available':' locked');b.textContent=t;b.onclick=()=>{if(i===12)return;if(guessOpen&&!guessedThisClue&&!revealedAnswers.has(t)){socket.emit('guess',i);return}socket.emit('mark',i)};$('board').appendChild(b)})}
 function renderPlayers(ps){$('count').textContent=ps.length;$('players').innerHTML=ps.map(p=>'<span class="chip">'+esc(p.name)+'</span>').join('')}
 function renderHistory(h){$('history').innerHTML=h.length?h.map((x,i)=>'<div><b>'+(i+1)+'.</b> '+esc(x.clue)+' <span class="history-answer">— '+esc(x.answer)+'</span></div>').join(''):'<p>Aún no hay pistas.</p>'}
 async function qr(code){const url=location.origin+'/?room='+code;$('url').textContent=url;const r=await fetch('/api/qr?url='+encodeURIComponent(url)).then(r=>r.json());$('qr').src=r.data}
@@ -11,10 +11,10 @@ $('start').onclick=()=>socket.emit('start',{mode:$('gameMode').value});$('draw')
 socket.on('room-created',d=>{const r=d.room||d;role='moderator';roomCode=r.code||'';moderatorToken=d.moderatorToken||moderatorToken||'';if(moderatorToken)localStorage.setItem('bingoModeratorToken',moderatorToken);if(roomCode)localStorage.setItem('bingoModeratorRoom',roomCode);show('moderator');$('mCode').textContent=roomCode||'—';$('mMode').textContent=r.modeLabel||'Una fila';renderPlayers(r.players||[]);renderHistory(r.history||[]);if(roomCode)qr(roomCode)});
 socket.on('moderator-auth-error',m=>{$('modErr').textContent=m;});
 socket.on('joined',d=>{
- const r=d.room;role='player';roomCode=r.code;board=d.board;marks=new Set(d.marks||[12]);playerToken=d.playerToken;
+ const r=d.room;role='player';roomCode=r.code;board=d.board;marks=new Set(d.marks||[12]);playerToken=d.playerToken;score=d.score||0;guessedThisClue=!!d.guessedCurrent;guessOpen=!!(r.started&&r.currentClue&&!r.currentClue.answer);
  localStorage.setItem('bingoPlayerToken',playerToken);localStorage.setItem('bingoPlayerRoom',roomCode);localStorage.setItem('bingoPlayerName',$('name').value);
  revealedAnswers=new Set((r.history||[]).filter(x=>x.revealed).map(x=>x.answer));
- show('player');$('pCode').textContent=roomCode;$('pMode').textContent=r.modeLabel;
+ show('player');$('pCode').textContent=roomCode;$('pMode').textContent=r.modeLabel;$('pScore').textContent=score;$('guessStatus').textContent=guessOpen?(guessedThisClue?'Ya respondiste esta pista':'Adivina antes de revelar'):'Espera la próxima pista';
  $('pStatus').textContent=r.started?'Partida en curso':'Esperando';
  if(r.currentClue){$('pNum').textContent='Pista '+r.currentClue.number;$('pClue').textContent=r.currentClue.clue;if(r.currentClue.answer){$('pAns').textContent='Respuesta: '+r.currentClue.answer;$('pAns').classList.remove('hide')}}
  renderBoard();
@@ -29,14 +29,14 @@ socket.on('moderator-resumed',d=>{
 socket.on('resume-moderator-failed',()=>{localStorage.removeItem('bingoModeratorToken');localStorage.removeItem('bingoModeratorRoom')});
 socket.on('room-state',r=>{if(role==='moderator')renderPlayers(r.players)});
 socket.on('started',r=>{if(role==='moderator'){$('mStatus').textContent='Partida en curso';$('mMode').textContent=r.modeLabel;$('gameMode').disabled=true;$('start').disabled=true}else{$('pStatus').textContent='Partida en curso';$('pMode').textContent=r.modeLabel}renderBoard()});
-socket.on('clue',d=>{if(role==='moderator'){$('num').textContent='Pista '+d.number;$('left').textContent=d.remaining+' restantes';$('clue').textContent=d.text;$('ans').classList.add('hide')}else{$('pNum').textContent='Pista '+d.number;$('pClue').textContent=d.text;$('pAns').classList.add('hide')}});
-socket.on('answer',d=>{revealedAnswers.add(d.answer);if(role==='moderator'){$('ans').textContent='Respuesta: '+d.answer;$('ans').classList.remove('hide');renderHistory(d.room.history)}else{$('pAns').textContent='Respuesta: '+d.answer;$('pAns').classList.remove('hide');renderBoard()}});
+socket.on('clue',d=>{if(role==='moderator'){$('num').textContent='Pista '+d.number;$('left').textContent=d.remaining+' restantes';$('clue').textContent=d.text;$('ans').classList.add('hide')}else{guessOpen=true;guessedThisClue=false;$('guessStatus').textContent='Adivina antes de revelar';$('pNum').textContent='Pista '+d.number;$('pClue').textContent=d.text;$('pAns').classList.add('hide');renderBoard()}});
+socket.on('answer',d=>{revealedAnswers.add(d.answer);if(role==='moderator'){$('ans').textContent='Respuesta: '+d.answer;$('ans').classList.remove('hide');renderHistory(d.room.history)}else{guessOpen=false;$('guessStatus').textContent='Respuesta revelada';$('pAns').textContent='Respuesta: '+d.answer;$('pAns').classList.remove('hide');renderBoard()}});
 socket.on('marks',m=>{marks=new Set(m);renderBoard()});
 socket.on('bingo-result',d=>{$('msg').textContent=d.ok?'✅ ¡Bingo correcto!':'❌ Aún no tienes el bingo válido para: '+d.modeLabel;$('msg').style.color=d.ok?'#2f7d5a':'#b43f4f'});
 socket.on('claim',d=>{if(role==='moderator')$('mStatus').textContent=d.ok?'✅ Bingo válido de '+d.name+' ('+d.modeLabel+')':'❌ '+d.name+' aún no tiene bingo válido'});
 socket.on('winner',d=>{$('winnerName').textContent=d.name;$('winnerMode').textContent='Modalidad: '+d.modeLabel;$('winner').classList.remove('hide');launchCelebration()});
-socket.on('new-board',b=>{board=b;marks=new Set([12]);revealedAnswers=new Set();if(role==='player')renderBoard()});
-socket.on('reset',r=>{revealedAnswers=new Set();if(role==='moderator'){$('mStatus').textContent='Esperando inicio';$('clue').textContent='Nueva ronda lista.';$('num').textContent='Pista 0';$('left').textContent='24 restantes';$('ans').classList.add('hide');$('gameMode').disabled=false;$('start').disabled=false;$('gameMode').value='FILA';$('mMode').textContent='Una fila';renderHistory([])}else{$('pStatus').textContent='Esperando';$('pClue').textContent='Nueva ronda preparada. Espera al moderador.';$('pAns').classList.add('hide');$('msg').textContent='';$('pMode').textContent='Una fila';renderBoard()}});
+socket.on('new-board',d=>{board=Array.isArray(d)?d:d.board;marks=new Set([12]);revealedAnswers=new Set();score=Array.isArray(d)?0:(d.score||0);guessOpen=false;guessedThisClue=false;if(role==='player'){$('pScore').textContent=score;$('guessStatus').textContent='Espera la próxima pista';renderBoard()}});
+socket.on('reset',r=>{revealedAnswers=new Set();score=0;guessOpen=false;guessedThisClue=false;if(role==='moderator'){$('mStatus').textContent='Esperando inicio';$('clue').textContent='Nueva ronda lista.';$('num').textContent='Pista 0';$('left').textContent='24 restantes';$('ans').classList.add('hide');$('gameMode').disabled=false;$('start').disabled=false;$('gameMode').value='FILA';$('mMode').textContent='Una fila';renderHistory([])}else{$('pStatus').textContent='Esperando';$('pClue').textContent='Nueva ronda preparada. Espera al moderador.';$('pAns').classList.add('hide');$('msg').textContent='';$('pMode').textContent='Una fila';renderBoard()}});
 socket.on('error-msg',m=>{if(role==='player'||!role)$('err').textContent=m;else alert(m)});
 socket.on('closed',()=>{alert('El moderador cerró la sala.');location.reload()});
 function launchCelebration(){
@@ -59,3 +59,12 @@ const pre=new URLSearchParams(location.search).get('room');if(pre)$('code').valu
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;$('install').classList.remove('hide')});$('install').onclick=async()=>{if(installPrompt){installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;$('install').classList.add('hide')}};
 if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('/service-worker.js').catch(()=>{}));
 socket.on('mark-error',m=>{$('msg').textContent='⚠️ '+m;$('msg').style.color='#b43f4f'});
+socket.on('guess-result',d=>{
+ guessedThisClue=true;guessOpen=false;score=d.score||0;$('pScore').textContent=score;$('guessStatus').textContent=d.correct?'✅ ¡Correcto! +1 punto':'❌ Incorrecto';
+ const cell=$('board').children[d.index];
+ if(cell){
+   cell.classList.add(d.correct?'guess-correct':'guess-wrong');
+   setTimeout(()=>{cell.classList.remove('guess-correct','guess-wrong');renderBoard()},900);
+ }
+});
+socket.on('guess-error',m=>{$('guessStatus').textContent='⚠️ '+m});
