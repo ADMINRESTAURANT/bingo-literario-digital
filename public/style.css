@@ -42,3 +42,12 @@ button:disabled,select:disabled{opacity:.6;cursor:not-allowed}
   align-items:center;
   justify-content:center;
 }
+
+#ranking,#pRanking{display:flex;flex-direction:column;gap:8px}
+.rank-row{display:grid;grid-template-columns:72px 1fr auto;align-items:center;gap:10px;padding:10px 12px;border:1px solid #e7dade;background:#fbf7f2;border-radius:12px}
+.rank-row.leader{background:#eefaf2;border-color:#bde7c8;box-shadow:0 0 0 2px rgba(53,198,107,.08)}
+.rank-pos{font-weight:900;color:var(--gold)}
+.rank-name{font-weight:800;color:var(--burg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rank-score{font-weight:900;color:#176b39}
+.ranking-player-card{margin-top:14px}
+@media(max-width:760px){.rank-row{grid-template-columns:58px 1fr auto;font-size:14px}}
