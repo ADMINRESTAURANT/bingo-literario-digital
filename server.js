@@ -56,7 +56,10 @@ function bingoOk(p,r){
 }
 
 io.on('connection',s=>{
- s.on('create-room',({name})=>{
+ s.on('create-room',({name,password})=>{
+   const moderatorPassword=process.env.MODERATOR_PASSWORD;
+   if(!moderatorPassword)return s.emit('moderator-auth-error','La contraseña del moderador todavía no está configurada en el servidor.');
+   if(String(password||'')!==moderatorPassword)return s.emit('moderator-auth-error','Contraseña de moderador incorrecta.');
    let c=code();while(rooms.has(c))c=code();
    const r={code:c,moderator:s.id,players:new Map(),started:false,remaining:shuffle(clues.map((_,i)=>i)),history:[],current:null,revealed:false};
    rooms.set(c,r);s.join(c);s.data={room:c,role:'moderator'};
