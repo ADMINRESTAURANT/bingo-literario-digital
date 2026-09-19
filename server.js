@@ -38,6 +38,15 @@ const clues=[
 ['Género narrativo','Género literario en el que un narrador cuenta hechos reales o ficticios.']
 ];
 
+const GAME_MODES={
+ FILA:'Una fila',
+ COLUMNA:'Una columna',
+ DIAGONAL:'Una diagonal',
+ X:'X (dos diagonales)',
+ ESQUINAS:'Cuatro esquinas',
+ TABLA_LLENA:'Tabla llena'
+};
+
 const rooms=new Map();
 const shuffle=a=>{a=[...a];for(let i=a.length-1;i;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
 const code=()=>Math.random().toString(36).slice(2,7).toUpperCase();
@@ -45,14 +54,21 @@ const board=()=>{const a=shuffle(terms);const b=[];let k=0;for(let i=0;i<25;i++)
 
 app.get('/api/qr',async(req,res)=>{try{res.json({data:await QRCode.toDataURL(req.query.url||'',{width:320,margin:1})});}catch(e){res.status(400).json({error:'QR'});}});
 
-function publicRoom(r){return {code:r.code,started:r.started,current:r.current,revealed:r.revealed,players:[...r.players.values()].map(p=>({id:p.id,name:p.name})),history:r.history.map(i=>({answer:clues[i][0],clue:clues[i][1]}))};}
+function revealedAnswers(r){return new Set(r.history.filter(i=>i!==r.current||r.revealed).map(i=>clues[i][0]));}
+function publicRoom(r){return {code:r.code,started:r.started,current:r.current,revealed:r.revealed,mode:r.mode,modeLabel:GAME_MODES[r.mode],players:[...r.players.values()].map(p=>({id:p.id,name:p.name})),history:r.history.map(i=>({answer:clues[i][0],clue:clues[i][1]}))};}
 function bingoOk(p,r){
- const revealed=new Set(r.history.filter(i=>i!==r.current||r.revealed).map(i=>clues[i][0]));
+ const revealed=revealedAnswers(r);
  const good=i=>i===12||(p.marks.has(i)&&revealed.has(p.board[i]));
- const lines=[];
- for(let x=0;x<5;x++){lines.push([0,1,2,3,4].map(c=>x*5+c));lines.push([0,1,2,3,4].map(rr=>rr*5+x));}
- lines.push([0,6,12,18,24],[4,8,12,16,20]);
- return lines.some(l=>l.every(good));
+ const rows=[0,1,2,3,4].map(rr=>[0,1,2,3,4].map(col=>rr*5+col));
+ const cols=[0,1,2,3,4].map(col=>[0,1,2,3,4].map(rr=>rr*5+col));
+ const diags=[[0,6,12,18,24],[4,8,12,16,20]];
+ if(r.mode==='FILA')return rows.some(line=>line.every(good));
+ if(r.mode==='COLUMNA')return cols.some(line=>line.every(good));
+ if(r.mode==='DIAGONAL')return diags.some(line=>line.every(good));
+ if(r.mode==='X')return diags.every(line=>line.every(good));
+ if(r.mode==='ESQUINAS')return [0,4,20,24].every(good);
+ if(r.mode==='TABLA_LLENA')return Array.from({length:25},(_,i)=>i).every(good);
+ return false;
 }
 
 io.on('connection',s=>{
@@ -61,7 +77,7 @@ io.on('connection',s=>{
    if(!moderatorPassword)return s.emit('moderator-auth-error','La contraseña del moderador todavía no está configurada en el servidor.');
    if(String(password||'')!==moderatorPassword)return s.emit('moderator-auth-error','Contraseña de moderador incorrecta.');
    let c=code();while(rooms.has(c))c=code();
-   const r={code:c,moderator:s.id,players:new Map(),started:false,remaining:shuffle(clues.map((_,i)=>i)),history:[],current:null,revealed:false};
+   const r={code:c,moderator:s.id,players:new Map(),started:false,remaining:shuffle(clues.map((_,i)=>i)),history:[],current:null,revealed:false,mode:'FILA'};
    rooms.set(c,r);s.join(c);s.data={room:c,role:'moderator'};
    s.emit('room-created',publicRoom(r));
  });
@@ -71,12 +87,12 @@ io.on('connection',s=>{
    const p={id:s.id,name,board:board(),marks:new Set([12])};r.players.set(s.id,p);s.join(code);s.data={room:code,role:'player'};
    s.emit('joined',{room:publicRoom(r),board:p.board});io.to(r.moderator).emit('room-state',publicRoom(r));
  });
- s.on('start',()=>{const r=rooms.get(s.data.room);if(r&&r.moderator===s.id){r.started=true;io.to(r.code).emit('started',publicRoom(r));}});
+ s.on('start',({mode}={})=>{const r=rooms.get(s.data.room);if(!r||r.moderator!==s.id)return;if(!GAME_MODES[mode])mode='FILA';r.mode=mode;r.started=true;io.to(r.code).emit('started',publicRoom(r));});
  s.on('draw',()=>{const r=rooms.get(s.data.room);if(!r||r.moderator!==s.id)return;if(!r.started)return s.emit('error-msg','Primero inicia la partida.');if(r.current!==null&&!r.revealed)return s.emit('error-msg','Revela la respuesta anterior.');if(!r.remaining.length)return s.emit('error-msg','Ya salieron todas las pistas.');r.current=r.remaining.pop();r.revealed=false;r.history.push(r.current);io.to(r.code).emit('clue',{text:clues[r.current][1],number:r.history.length,remaining:r.remaining.length});});
  s.on('reveal',()=>{const r=rooms.get(s.data.room);if(!r||r.moderator!==s.id||r.current===null)return;r.revealed=true;io.to(r.code).emit('answer',{answer:clues[r.current][0],room:publicRoom(r)});});
- s.on('mark',i=>{const r=rooms.get(s.data.room);const p=r?.players.get(s.id);i=Number(i);if(!p||i===12||i<0||i>24)return;p.marks.has(i)?p.marks.delete(i):p.marks.add(i);s.emit('marks',[...p.marks]);});
- s.on('bingo',()=>{const r=rooms.get(s.data.room);const p=r?.players.get(s.id);if(!p)return;const ok=bingoOk(p,r);s.emit('bingo-result',ok);io.to(r.moderator).emit('claim',{name:p.name,ok});if(ok)io.to(r.code).emit('winner',p.name);});
- s.on('reset',()=>{const r=rooms.get(s.data.room);if(!r||r.moderator!==s.id)return;r.started=false;r.remaining=shuffle(clues.map((_,i)=>i));r.history=[];r.current=null;r.revealed=false;for(const p of r.players.values()){p.board=board();p.marks=new Set([12]);io.to(p.id).emit('new-board',p.board);}io.to(r.code).emit('reset',publicRoom(r));});
+ s.on('mark',i=>{const r=rooms.get(s.data.room);const p=r?.players.get(s.id);i=Number(i);if(!r||!p||i===12||i<0||i>24)return;if(!r.started)return s.emit('mark-error','La partida todavía no ha iniciado.');if(p.marks.has(i))return s.emit('mark-error','Esa casilla ya quedó tapada y no se puede destapar.');const revealed=revealedAnswers(r);if(!revealed.has(p.board[i]))return s.emit('mark-error','Esa palabra todavía no ha sido mostrada por el moderador.');p.marks.add(i);s.emit('marks',[...p.marks]);});
+ s.on('bingo',()=>{const r=rooms.get(s.data.room);const p=r?.players.get(s.id);if(!p)return;const ok=bingoOk(p,r);s.emit('bingo-result',{ok,modeLabel:GAME_MODES[r.mode]});io.to(r.moderator).emit('claim',{name:p.name,ok,modeLabel:GAME_MODES[r.mode]});if(ok)io.to(r.code).emit('winner',{name:p.name,modeLabel:GAME_MODES[r.mode]});});
+ s.on('reset',()=>{const r=rooms.get(s.data.room);if(!r||r.moderator!==s.id)return;r.started=false;r.remaining=shuffle(clues.map((_,i)=>i));r.history=[];r.current=null;r.revealed=false;r.mode='FILA';for(const p of r.players.values()){p.board=board();p.marks=new Set([12]);io.to(p.id).emit('new-board',p.board);}io.to(r.code).emit('reset',publicRoom(r));});
  s.on('disconnect',()=>{const r=rooms.get(s.data.room);if(!r)return;if(r.moderator===s.id){io.to(r.code).emit('closed');rooms.delete(r.code);}else if(r.players.delete(s.id))io.to(r.moderator).emit('room-state',publicRoom(r));});
 });
 
