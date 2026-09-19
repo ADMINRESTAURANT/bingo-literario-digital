@@ -3,6 +3,14 @@ function show(id){['home','moderator','player'].forEach(x=>$(x).classList.add('h
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function renderBoard(){$('board').innerHTML='';board.forEach((t,i)=>{const b=document.createElement('button');const available=i===12||revealedAnswers.has(t);b.className='cell'+(marks.has(i)?' marked':'')+(i===12?' free':'')+(available?' available':' locked');b.textContent=t;b.onclick=()=>{if(i===12)return;if(guessOpen&&!guessedThisClue&&!revealedAnswers.has(t)){socket.emit('guess',i);return}socket.emit('mark',i)};$('board').appendChild(b)})}
 function renderPlayers(ps){$('count').textContent=ps.length;$('players').innerHTML=ps.map(p=>'<span class="chip">'+esc(p.name)+'</span>').join('')}
+function renderRanking(list){
+ const html=list.length?list.map((p,i)=>{
+   const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+   return '<div class="rank-row '+(i===0?'leader':'')+'"><span class="rank-pos">'+medal+' '+(i+1)+'</span><span class="rank-name">'+esc(p.name)+'</span><span class="rank-score">'+p.score+' pts</span></div>';
+ }).join(''):'<p class="muted">Aún no hay puntos.</p>';
+ if($('ranking'))$('ranking').innerHTML=html;
+ if($('pRanking'))$('pRanking').innerHTML=html;
+}
 function renderHistory(h){$('history').innerHTML=h.length?h.map((x,i)=>'<div><b>'+(i+1)+'.</b> '+esc(x.clue)+' <span class="history-answer">— '+esc(x.answer)+'</span></div>').join(''):'<p>Aún no hay pistas.</p>'}
 async function qr(code){const url=location.origin+'/?room='+code;$('url').textContent=url;const r=await fetch('/api/qr?url='+encodeURIComponent(url)).then(r=>r.json());$('qr').src=r.data}
 $('create').onclick=()=>{ $('modErr').textContent=''; socket.emit('create-room',{name:$('modName').value,password:$('modPassword').value}); };
@@ -68,3 +76,5 @@ socket.on('guess-result',d=>{
  }
 });
 socket.on('guess-error',m=>{$('guessStatus').textContent='⚠️ '+m});
+
+socket.on('leaderboard',list=>{renderRanking(list)});
