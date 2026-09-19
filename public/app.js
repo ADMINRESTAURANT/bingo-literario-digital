@@ -5,10 +5,11 @@ function renderBoard(){$('board').innerHTML='';board.forEach((t,i)=>{const b=doc
 function renderPlayers(ps){$('count').textContent=ps.length;$('players').innerHTML=ps.map(p=>'<span class="chip">'+esc(p.name)+'</span>').join('')}
 function renderHistory(h){$('history').innerHTML=h.length?h.map((x,i)=>'<div><b>'+(i+1)+'.</b> '+esc(x.clue)+' <span class="history-answer">— '+esc(x.answer)+'</span></div>').join(''):'<p>Aún no hay pistas.</p>'}
 async function qr(code){const url=location.origin+'/?room='+code;$('url').textContent=url;const r=await fetch('/api/qr?url='+encodeURIComponent(url)).then(r=>r.json());$('qr').src=r.data}
-$('create').onclick=()=>socket.emit('create-room',{name:$('modName').value});
+$('create').onclick=()=>{ $('modErr').textContent=''; socket.emit('create-room',{name:$('modName').value,password:$('modPassword').value}); };
 $('join').onclick=()=>socket.emit('join-room',{code:$('code').value,name:$('name').value});
 $('start').onclick=()=>socket.emit('start');$('draw').onclick=()=>socket.emit('draw');$('reveal').onclick=()=>socket.emit('reveal');$('reset').onclick=()=>socket.emit('reset');$('claim').onclick=()=>socket.emit('bingo');
 socket.on('room-created',r=>{role='moderator';roomCode=r.code;show('moderator');$('mCode').textContent=r.code;renderPlayers(r.players);renderHistory(r.history);qr(r.code)});
+socket.on('moderator-auth-error',m=>{$('modErr').textContent=m;});
 socket.on('joined',d=>{role='player';roomCode=d.room.code;board=d.board;marks=new Set([12]);show('player');$('pCode').textContent=roomCode;renderBoard()});
 socket.on('room-state',r=>{if(role==='moderator')renderPlayers(r.players)});
 socket.on('started',()=>{if(role==='moderator')$('mStatus').textContent='Partida en curso';else $('pStatus').textContent='Partida en curso'});
