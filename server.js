@@ -11,32 +11,38 @@ const PORT=process.env.PORT||3000;
 
 app.use(express.static('public'));
 
-const terms=['Cuento','Metáfora','Narrador','Novela','Verso','Protagonista','Leyenda','Estrofa','Fábula','Autor','Personaje','Poesía','Trama','Símil','Antagonista','Mito','Desenlace','Hipérbole','Moraleja','Ambiente','Drama','Personificación','Género lírico','Género narrativo'];
+const terms=[
+'Administración financiera','Liquidez','Rentabilidad','Riesgo financiero','Presupuesto',
+'Flujo de caja','Capital de trabajo','Inversión','Financiamiento','Endeudamiento',
+'Activos','Pasivos','Tasa de interés','Inflación','Crédito',
+'Hipoteca subprime','Burbuja inmobiliaria','Lehman Brothers','Crisis financiera','Recesión',
+'Rescate financiero','Mercado bursátil','Desempleo','Regulación financiera'
+];
 const clues=[
-['Cuento','Relato corto con pocos personajes y una acción principal.'],
-['Metáfora','Comparación implícita que relaciona dos ideas sin usar la palabra “como”.'],
-['Narrador','Voz que cuenta los acontecimientos de una historia.'],
-['Novela','Relato extenso, generalmente dividido en capítulos y con varios personajes.'],
-['Verso','Cada una de las líneas que forman un poema.'],
-['Protagonista','Personaje principal alrededor del cual se desarrolla la historia.'],
-['Leyenda','Relato tradicional que mezcla elementos reales y fantásticos.'],
-['Estrofa','Conjunto de versos agrupados dentro de un poema.'],
-['Fábula','Relato breve que suele tener animales como personajes y deja una enseñanza.'],
-['Autor','Persona que crea o escribe una obra literaria.'],
-['Personaje','Ser real o imaginario que participa en los hechos de una historia.'],
-['Poesía','Forma literaria que expresa emociones, ideas o sentimientos, con frecuencia mediante versos.'],
-['Trama','Conjunto de acontecimientos que forman y desarrollan una historia.'],
-['Símil','Comparación explícita que suele utilizar palabras como “como”, “parece” o “igual que”.'],
-['Antagonista','Personaje o fuerza que se opone al protagonista.'],
-['Mito','Relato tradicional relacionado con dioses, héroes o explicaciones sobre el origen de algo.'],
-['Desenlace','Parte final de una narración donde se resuelve el conflicto principal.'],
-['Hipérbole','Figura literaria que exagera una idea de manera intencional.'],
-['Moraleja','Enseñanza o reflexión que deja una historia, especialmente una fábula.'],
-['Ambiente','Lugar, época y condiciones en las que suceden los acontecimientos.'],
-['Drama','Obra literaria escrita principalmente para ser representada ante un público.'],
-['Personificación','Figura literaria que atribuye características humanas a animales, objetos o ideas.'],
-['Género lírico','Género literario que expresa sentimientos, emociones y estados de ánimo.'],
-['Género narrativo','Género literario en el que un narrador cuenta hechos reales o ficticios.']
+['Administración financiera','Área de la administración encargada de planear, obtener, utilizar y controlar los recursos financieros de una organización.'],
+['Liquidez','Capacidad de una empresa o persona para cumplir sus obligaciones de corto plazo.'],
+['Rentabilidad','Relación entre el beneficio obtenido y los recursos utilizados para conseguirlo.'],
+['Riesgo financiero','Posibilidad de sufrir pérdidas por decisiones de inversión, deuda, tasas, mercado o crédito.'],
+['Presupuesto','Plan que estima ingresos y gastos para un periodo determinado.'],
+['Flujo de caja','Registro de las entradas y salidas de dinero durante un periodo.'],
+['Capital de trabajo','Recursos de corto plazo que permiten mantener funcionando las operaciones diarias de una empresa.'],
+['Inversión','Uso de recursos con la expectativa de obtener beneficios futuros.'],
+['Financiamiento','Obtención de recursos para realizar operaciones, proyectos o inversiones.'],
+['Endeudamiento','Uso de dinero prestado que genera una obligación futura de pago.'],
+['Activos','Bienes, derechos y recursos con valor económico que posee una empresa.'],
+['Pasivos','Deudas y obligaciones que una empresa debe pagar a terceros.'],
+['Tasa de interés','Porcentaje que representa el costo de pedir dinero prestado o la ganancia por prestarlo.'],
+['Inflación','Aumento general y sostenido de los precios que reduce el poder adquisitivo del dinero.'],
+['Crédito','Dinero o capacidad de compra recibida hoy con el compromiso de pagar en el futuro.'],
+['Hipoteca subprime','Préstamo hipotecario otorgado a personas con mayor riesgo de incumplimiento; tuvo un papel importante en la crisis de 2008.'],
+['Burbuja inmobiliaria','Aumento excesivo de los precios de la vivienda por encima de su valor sostenible, seguido generalmente por una caída.'],
+['Lehman Brothers','Banco de inversión estadounidense cuya quiebra en septiembre de 2008 intensificó la crisis financiera mundial.'],
+['Crisis financiera','Situación en la que bancos, mercados y empresas enfrentan fuertes pérdidas, falta de confianza y dificultades de crédito.'],
+['Recesión','Disminución significativa de la actividad económica durante un periodo prolongado.'],
+['Rescate financiero','Apoyo de gobiernos o bancos centrales para evitar el colapso de instituciones o del sistema financiero.'],
+['Mercado bursátil','Mercado en el que se compran y venden acciones y otros valores financieros.'],
+['Desempleo','Situación de las personas que buscan trabajo y no lo encuentran; aumentó fuertemente durante la crisis de 2008.'],
+['Regulación financiera','Conjunto de normas y controles destinados a reducir riesgos y proteger la estabilidad del sistema financiero.']
 ];
 
 const GAME_MODES={
