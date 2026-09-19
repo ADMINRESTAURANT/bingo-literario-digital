@@ -1,11 +1,11 @@
 {
-  "name":"Bingo Literario Digital",
-  "short_name":"Bingo Literario",
+  "name":"Bingo Financiero Digital",
+  "short_name":"Bingo Financiero",
   "start_url":"/",
   "display":"standalone",
   "background_color":"#f7f0e4",
   "theme_color":"#6e2639",
-  "description":"Bingo literario interactivo para jugar en clase desde celulares.",
+  "description":"Bingo interactivo sobre administración financiera y la crisis mundial de 2008.",
   "icons":[
     {"src":"/icon-192.svg","sizes":"192x192","type":"image/svg+xml"},
     {"src":"/icon-512.svg","sizes":"512x512","type":"image/svg+xml"}
