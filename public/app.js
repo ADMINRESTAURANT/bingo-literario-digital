@@ -45,12 +45,14 @@ function launchCelebration(){
  for(let i=0;i<90;i++){const p=document.createElement('span');p.textContent=emojis[Math.floor(Math.random()*emojis.length)];p.style.left=Math.random()*100+'vw';p.style.animationDelay=(Math.random()*.5)+'s';p.style.animationDuration=(1.8+Math.random()*1.8)+'s';wrap.appendChild(p)}
  setTimeout(()=>wrap.remove(),4200);
 }
-socket.on('connect',()=>{
+function restoreSession(){
  const mRoom=localStorage.getItem('bingoModeratorRoom');
  if(moderatorToken&&mRoom&&!role){socket.emit('resume-moderator',{code:mRoom,moderatorToken});return}
  const pRoom=localStorage.getItem('bingoPlayerRoom'),pName=localStorage.getItem('bingoPlayerName');
  if(playerToken&&pRoom&&pName&&!role){$('name').value=pName;$('code').value=pRoom;socket.emit('join-room',{code:pRoom,name:pName,playerToken});}
-});
+}
+socket.on('connect',restoreSession);
+if(socket.connected)restoreSession();
 socket.on('moderator-away',()=>{if(role==='player')$('pStatus').textContent='Moderador reconectando…'});
 socket.on('moderator-back',()=>{if(role==='player')$('pStatus').textContent='Partida en curso'});
 const pre=new URLSearchParams(location.search).get('room');if(pre)$('code').value=pre.toUpperCase();
