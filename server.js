@@ -12,37 +12,37 @@ const PORT=process.env.PORT||3000;
 app.use(express.static('public'));
 
 const terms=[
-'Administración financiera','Liquidez','Rentabilidad','Riesgo financiero','Presupuesto',
-'Flujo de caja','Capital de trabajo','Inversión','Financiamiento','Endeudamiento',
-'Activos','Pasivos','Tasa de interés','Inflación','Crédito',
-'Hipoteca subprime','Burbuja inmobiliaria','Lehman Brothers','Crisis financiera','Recesión',
-'Rescate financiero','Mercado bursátil','Desempleo','Regulación financiera'
+'Administración financiera','Liquidez','Rentabilidad','Riesgo financiero','Flujo de caja',
+'Capital de trabajo','Presupuesto','Endeudamiento','Apalancamiento','Tasa de interés',
+'Gestión del riesgo','Decisiones de inversión','Hipotecas subprime','Burbuja inmobiliaria','Titulización',
+'Lehman Brothers','Crisis de liquidez','Crisis crediticia','Rescate financiero','Recesión mundial',
+'Desempleo','Caída bursátil','Regulación financiera','Lecciones de 2008'
 ];
 const clues=[
-['Administración financiera','Área de la administración encargada de planear, obtener, utilizar y controlar los recursos financieros de una organización.'],
-['Liquidez','Capacidad de una empresa o persona para cumplir sus obligaciones de corto plazo.'],
-['Rentabilidad','Relación entre el beneficio obtenido y los recursos utilizados para conseguirlo.'],
-['Riesgo financiero','Posibilidad de sufrir pérdidas por decisiones de inversión, deuda, tasas, mercado o crédito.'],
-['Presupuesto','Plan que estima ingresos y gastos para un periodo determinado.'],
-['Flujo de caja','Registro de las entradas y salidas de dinero durante un periodo.'],
-['Capital de trabajo','Recursos de corto plazo que permiten mantener funcionando las operaciones diarias de una empresa.'],
-['Inversión','Uso de recursos con la expectativa de obtener beneficios futuros.'],
-['Financiamiento','Obtención de recursos para realizar operaciones, proyectos o inversiones.'],
-['Endeudamiento','Uso de dinero prestado que genera una obligación futura de pago.'],
-['Activos','Bienes, derechos y recursos con valor económico que posee una empresa.'],
-['Pasivos','Deudas y obligaciones que una empresa debe pagar a terceros.'],
-['Tasa de interés','Porcentaje que representa el costo de pedir dinero prestado o la ganancia por prestarlo.'],
-['Inflación','Aumento general y sostenido de los precios que reduce el poder adquisitivo del dinero.'],
-['Crédito','Dinero o capacidad de compra recibida hoy con el compromiso de pagar en el futuro.'],
-['Hipoteca subprime','Préstamo hipotecario otorgado a personas con mayor riesgo de incumplimiento; tuvo un papel importante en la crisis de 2008.'],
-['Burbuja inmobiliaria','Aumento excesivo de los precios de la vivienda por encima de su valor sostenible, seguido generalmente por una caída.'],
-['Lehman Brothers','Banco de inversión estadounidense cuya quiebra en septiembre de 2008 intensificó la crisis financiera mundial.'],
-['Crisis financiera','Situación en la que bancos, mercados y empresas enfrentan fuertes pérdidas, falta de confianza y dificultades de crédito.'],
-['Recesión','Disminución significativa de la actividad económica durante un periodo prolongado.'],
-['Rescate financiero','Apoyo de gobiernos o bancos centrales para evitar el colapso de instituciones o del sistema financiero.'],
-['Mercado bursátil','Mercado en el que se compran y venden acciones y otros valores financieros.'],
-['Desempleo','Situación de las personas que buscan trabajo y no lo encuentran; aumentó fuertemente durante la crisis de 2008.'],
-['Regulación financiera','Conjunto de normas y controles destinados a reducir riesgos y proteger la estabilidad del sistema financiero.']
+['Administración financiera','Disciplina que busca planear, obtener, invertir y controlar los recursos financieros para mantener la estabilidad y el valor de una organización.'],
+['Liquidez','Capacidad de disponer de efectivo suficiente para cumplir obligaciones de corto plazo; su falta fue un problema central durante la crisis de 2008.'],
+['Rentabilidad','Resultado económico obtenido en relación con los recursos invertidos; una mayor rentabilidad suele implicar asumir ciertos niveles de riesgo.'],
+['Riesgo financiero','Posibilidad de sufrir pérdidas por decisiones de crédito, inversión, deuda, tasas de interés o movimientos del mercado.'],
+['Flujo de caja','Entradas y salidas reales de dinero que permiten saber si una organización puede cumplir sus pagos y continuar operando.'],
+['Capital de trabajo','Recursos de corto plazo necesarios para financiar las operaciones diarias y sostener la actividad de una empresa.'],
+['Presupuesto','Herramienta de planeación financiera que organiza ingresos, gastos e inversiones esperadas para controlar los recursos.'],
+['Endeudamiento','Uso de recursos prestados que deben devolverse; cuando es excesivo puede aumentar la vulnerabilidad financiera.'],
+['Apalancamiento','Uso de deuda para financiar inversiones con la intención de aumentar el rendimiento, pero también incrementando el riesgo de pérdidas.'],
+['Tasa de interés','Costo del dinero prestado; sus cambios afectan el crédito, las hipotecas, la inversión y las decisiones financieras.'],
+['Gestión del riesgo','Proceso de identificar, analizar y controlar riesgos financieros para reducir la posibilidad de pérdidas importantes.'],
+['Decisiones de inversión','Elección de dónde colocar recursos buscando rentabilidad, considerando riesgo, liquidez y horizonte de tiempo.'],
+['Hipotecas subprime','Créditos hipotecarios otorgados a personas con mayor probabilidad de incumplimiento; fueron uno de los detonantes de la crisis de 2008.'],
+['Burbuja inmobiliaria','Incremento excesivo y poco sostenible del precio de las viviendas, alimentado por crédito fácil y expectativas de nuevas subidas.'],
+['Titulización','Proceso de agrupar créditos, como hipotecas, y convertirlos en valores financieros que pueden venderse a inversionistas.'],
+['Lehman Brothers','Banco de inversión estadounidense cuya quiebra en septiembre de 2008 profundizó la pérdida de confianza y la crisis financiera mundial.'],
+['Crisis de liquidez','Situación en la que bancos y empresas tienen dificultades para obtener efectivo o financiamiento inmediato, incluso teniendo activos.'],
+['Crisis crediticia','Reducción fuerte de la disponibilidad de préstamos porque las entidades financieras aumentan sus restricciones y desconfían del riesgo.'],
+['Rescate financiero','Medidas extraordinarias de gobiernos y bancos centrales para apoyar instituciones, estabilizar mercados y evitar un colapso mayor.'],
+['Recesión mundial','Caída generalizada de la actividad económica que afectó producción, consumo, inversión y comercio tras la crisis financiera de 2008.'],
+['Desempleo','Pérdida de puestos de trabajo provocada por la reducción de la actividad económica, uno de los efectos sociales más graves de la crisis.'],
+['Caída bursátil','Descenso fuerte del precio de las acciones debido al miedo, las pérdidas financieras y la pérdida de confianza de los inversionistas.'],
+['Regulación financiera','Normas y controles aplicados al sistema financiero para limitar riesgos excesivos, mejorar la supervisión y proteger la estabilidad.'],
+['Lecciones de 2008','La crisis mostró la importancia de controlar el endeudamiento, evaluar riesgos, mantener liquidez, diversificar y fortalecer la supervisión financiera.']
 ];
 
 const GAME_MODES={
