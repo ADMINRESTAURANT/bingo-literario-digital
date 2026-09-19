@@ -1,0 +1,29 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#6e2639"><link rel="manifest" href="/manifest.webmanifest"><link rel="stylesheet" href="/style.css"><title>Bingo Literario</title></head><body>
+<header><div><small>ACTIVIDAD INTERACTIVA</small><h1>Bingo Literario</h1><p>Aprende literatura mientras juegas</p></div><div class="book">📚</div></header>
+<main>
+<section id="home">
+<div class="install"><b>📱 Bingo Literario para celular</b><span> Puedes agregarlo a la pantalla de inicio.</span><button id="install" class="hide">Instalar</button></div>
+<div class="grid">
+<div class="card"><h2>👩‍🏫 Moderador</h2><input id="modName" placeholder="Tu nombre"><button id="create">Crear partida</button></div>
+<div class="card"><h2>🎓 Jugador</h2><input id="name" placeholder="Tu nombre"><input id="code" placeholder="Código de sala"><button id="join">Entrar</button><p id="err" class="err"></p></div>
+</div></section>
+
+<section id="moderator" class="hide">
+<div class="top"><div><small>CÓDIGO</small><div id="mCode" class="room"></div></div><span id="mStatus" class="pill">Esperando jugadores</span></div>
+<div class="grid">
+<div class="card center"><h2>Escanea para entrar</h2><img id="qr"><p id="url" class="url"></p></div>
+<div class="card"><h2>Jugadores</h2><div id="count" class="count">0</div><div id="players"></div><button id="start">Iniciar partida</button></div>
+</div>
+<div class="card clue"><div class="meta"><span id="num">Pista 0</span><span id="left">24 restantes</span></div><div id="clue">Aquí aparecerá la pista.</div><div id="ans" class="answer hide"></div><div class="actions"><button id="draw">Sacar pista</button><button id="reveal" class="gold">Revelar respuesta</button><button id="reset" class="soft">Nueva ronda</button></div></div>
+<div class="card"><h2>Historial</h2><div id="history"></div></div>
+</section>
+
+<section id="player" class="hide">
+<div class="top"><div><small>SALA</small><div id="pCode" class="room mini"></div></div><span id="pStatus" class="pill">Esperando</span></div>
+<div class="card clue"><div id="pNum" class="meta">Pista 0</div><div id="pClue">Espera al moderador.</div><div id="pAns" class="answer hide"></div></div>
+<div class="bingo-head"><b>B</b><b>I</b><b>N</b><b>G</b><b>O</b></div><div id="board" class="board"></div>
+<button id="claim" class="bingo">🎉 ¡BINGO!</button><p id="msg" class="center"></p>
+</section>
+</main>
+<div id="winner" class="overlay hide"><div class="win"><div>🏆</div><h2>¡BINGO LITERARIO!</h2><p>Ganador</p><strong id="winnerName"></strong><button onclick="document.getElementById('winner').classList.add('hide')">Continuar</button></div></div>
+<script src="/socket.io/socket.io.js"></script><script src="/app.js"></script></body></html>
