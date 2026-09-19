@@ -57,6 +57,12 @@ const board=()=>{const a=shuffle(terms);const b=[];let k=0;for(let i=0;i<25;i++)
 app.get('/api/qr',async(req,res)=>{try{res.json({data:await QRCode.toDataURL(req.query.url||'',{width:320,margin:1})});}catch(e){res.status(400).json({error:'QR'});}});
 
 function revealedAnswers(r){return new Set(r.history.filter(i=>i!==r.current||r.revealed).map(i=>clues[i][0]));}
+function leaderboard(r){
+ return [...r.players.values()]
+   .map(p=>({name:p.name,score:p.score||0,connected:!!p.socketId}))
+   .sort((a,b)=>b.score-a.score||a.name.localeCompare(b.name));
+}
+function emitLeaderboard(r){io.to(r.code).emit('leaderboard',leaderboard(r));}
 function publicRoom(r){return {code:r.code,started:r.started,current:r.current,revealed:r.revealed,mode:r.mode,modeLabel:GAME_MODES[r.mode],currentClue:r.current===null?null:{clue:clues[r.current][1],answer:r.revealed?clues[r.current][0]:null,number:r.history.length,remaining:r.remaining.length},players:[...r.players.values()].map(p=>({id:p.socketId||p.token,name:p.name,connected:!!p.socketId,score:p.score||0})),history:r.history.map(i=>({answer:clues[i][0],clue:clues[i][1],revealed:i!==r.current||r.revealed}))};}
 function bingoOk(p,r){
  const revealed=revealedAnswers(r);
@@ -101,7 +107,7 @@ io.on('connection',s=>{
    else{playerToken=token();p={token:playerToken,socketId:s.id,name,board:board(),marks:new Set([12]),score:0,guessedClue:null};r.players.set(playerToken,p);}
    s.join(code);s.data={room:code,role:'player',token:playerToken};
    s.emit('joined',{room:publicRoom(r),board:p.board,marks:[...p.marks],playerToken,score:p.score||0,guessedCurrent:p.guessedClue===r.current});
-   if(r.moderator)io.to(r.moderator).emit('room-state',publicRoom(r));
+   if(r.moderator)io.to(r.moderator).emit('room-state',publicRoom(r));emitLeaderboard(r);
  });
  s.on('start',({mode}={})=>{const r=rooms.get(s.data.room);if(!r||r.moderator!==s.id)return;if(!GAME_MODES[mode])mode='FILA';r.mode=mode;r.started=true;io.to(r.code).emit('started',publicRoom(r));});
  s.on('draw',()=>{const r=rooms.get(s.data.room);if(!r||r.moderator!==s.id)return;if(!r.started)return s.emit('error-msg','Primero inicia la partida.');if(r.current!==null&&!r.revealed)return s.emit('error-msg','Revela la respuesta anterior.');if(!r.remaining.length)return s.emit('error-msg','Ya salieron todas las pistas.');r.current=r.remaining.pop();r.revealed=false;r.history.push(r.current);io.to(r.code).emit('clue',{text:clues[r.current][1],number:r.history.length,remaining:r.remaining.length});});
@@ -115,11 +121,11 @@ io.on('connection',s=>{
    const correct=p.board[i]===clues[r.current][0];
    if(correct)p.score=(p.score||0)+1;
    s.emit('guess-result',{correct,index:i,score:p.score||0});
-   if(r.moderator)io.to(r.moderator).emit('room-state',publicRoom(r));
+   if(r.moderator)io.to(r.moderator).emit('room-state',publicRoom(r));emitLeaderboard(r);
  });
  s.on('mark',i=>{const r=rooms.get(s.data.room);const p=r?.players.get(s.data.token);i=Number(i);if(!r||!p||i===12||i<0||i>24)return;if(!r.started)return s.emit('mark-error','La partida todavía no ha iniciado.');if(p.marks.has(i))return s.emit('mark-error','Esa casilla ya quedó tapada y no se puede destapar.');const revealed=revealedAnswers(r);if(!revealed.has(p.board[i]))return s.emit('mark-error','Esa palabra todavía no ha sido mostrada por el moderador.');p.marks.add(i);s.emit('marks',[...p.marks]);});
  s.on('bingo',()=>{const r=rooms.get(s.data.room);const p=r?.players.get(s.data.token);if(!p)return;const ok=bingoOk(p,r);s.emit('bingo-result',{ok,modeLabel:GAME_MODES[r.mode]});io.to(r.moderator).emit('claim',{name:p.name,ok,modeLabel:GAME_MODES[r.mode]});if(ok)io.to(r.code).emit('winner',{name:p.name,modeLabel:GAME_MODES[r.mode]});});
- s.on('reset',()=>{const r=rooms.get(s.data.room);if(!r||r.moderator!==s.id)return;r.started=false;r.remaining=shuffle(clues.map((_,i)=>i));r.history=[];r.current=null;r.revealed=false;r.mode='FILA';for(const p of r.players.values()){p.board=board();p.marks=new Set([12]);p.score=0;p.guessedClue=null;if(p.socketId)io.to(p.socketId).emit('new-board',{board:p.board,score:0});}io.to(r.code).emit('reset',publicRoom(r));});
+ s.on('reset',()=>{const r=rooms.get(s.data.room);if(!r||r.moderator!==s.id)return;r.started=false;r.remaining=shuffle(clues.map((_,i)=>i));r.history=[];r.current=null;r.revealed=false;r.mode='FILA';for(const p of r.players.values()){p.board=board();p.marks=new Set([12]);p.score=0;p.guessedClue=null;if(p.socketId)io.to(p.socketId).emit('new-board',{board:p.board,score:0});}io.to(r.code).emit('reset',publicRoom(r));emitLeaderboard(r);});
  s.on('disconnect',()=>{
    const r=rooms.get(s.data.room);if(!r)return;
    if(s.data.role==='moderator'&&r.moderator===s.id){
@@ -133,7 +139,7 @@ io.on('connection',s=>{
    }
    if(s.data.role==='player'){
      const p=r.players.get(s.data.token);
-     if(p){p.socketId=null;if(r.moderator)io.to(r.moderator).emit('room-state',publicRoom(r));}
+     if(p){p.socketId=null;if(r.moderator)io.to(r.moderator).emit('room-state',publicRoom(r));emitLeaderboard(r);}
    }
  });
 });
