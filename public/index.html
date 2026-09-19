@@ -1,8 +1,8 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#6e2639"><link rel="manifest" href="/manifest.webmanifest"><link rel="stylesheet" href="/style.css"><title>Bingo Literario</title></head><body>
-<header><div><small>ACTIVIDAD INTERACTIVA</small><h1>Bingo Literario</h1><p>Aprende literatura mientras juegas con Robert</p></div><div class="book">📚</div></header>
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#6e2639"><link rel="manifest" href="/manifest.webmanifest"><link rel="stylesheet" href="/style.css"><title>Bingo Administración Financiera</title></head><body>
+<header><div><small>ACTIVIDAD INTERACTIVA</small><h1>Bingo Financiero</h1><p>Administración financiera y crisis mundial de 2008 — juega con Robert</p></div><div class="book">📚</div></header>
 <main>
 <section id="home">
-<div class="install"><b>📱 Bingo Literario para celular</b><span> Puedes agregarlo a la pantalla de inicio.</span><button id="install" class="hide">Instalar</button></div>
+<div class="install"><b>📱 Bingo Financiero para celular</b><span> Puedes agregarlo a la pantalla de inicio.</span><button id="install" class="hide">Instalar</button></div>
 <div class="grid">
 <div class="card"><h2>👩‍🏫 Moderador</h2><p>Solo el moderador autorizado puede crear partidas.</p><input id="modName" placeholder="Tu nombre"><input id="modPassword" type="password" placeholder="Contraseña de moderador"><button id="create">Crear partida</button><p id="modErr" class="err"></p></div>
 <div class="card"><h2>🎓 Jugador</h2><p>Entra escaneando el QR o con el código de sala. Puedes entrar aunque la partida ya haya comenzado, y si sales por accidente puedes volver a entrar.</p><input id="name" placeholder="Tu nombre"><input id="code" placeholder="Código de sala"><button id="join">Entrar</button><p id="err" class="err"></p></div>
@@ -35,5 +35,5 @@
 <div class="card ranking-player-card"><h2>🏆 Ranking</h2><div id="pRanking"></div></div><button id="claim" class="bingo">🎉 ¡BINGO!</button><p id="msg" class="center"></p>
 </section>
 </main>
-<div id="winner" class="overlay hide"><div class="win"><div>🏆</div><h2>¡BINGO LITERARIO!</h2><p id="winnerMode"></p><p>Ganador</p><strong id="winnerName"></strong><button onclick="document.getElementById('winner').classList.add('hide')">Continuar</button></div></div>
+<div id="winner" class="overlay hide"><div class="win"><div>🏆</div><h2>¡BINGO FINANCIERO!</h2><p id="winnerMode"></p><p>Ganador</p><strong id="winnerName"></strong><button onclick="document.getElementById('winner').classList.add('hide')">Continuar</button></div></div>
 <script src="/socket.io/socket.io.js"></script><script src="/app.js"></script></body></html>
