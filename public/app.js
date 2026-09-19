@@ -8,7 +8,7 @@ async function qr(code){const url=location.origin+'/?room='+code;$('url').textCo
 $('create').onclick=()=>{ $('modErr').textContent=''; socket.emit('create-room',{name:$('modName').value,password:$('modPassword').value}); };
 $('join').onclick=()=>socket.emit('join-room',{code:$('code').value,name:$('name').value,playerToken:playerToken});
 $('start').onclick=()=>socket.emit('start',{mode:$('gameMode').value});$('draw').onclick=()=>socket.emit('draw');$('reveal').onclick=()=>socket.emit('reveal');$('reset').onclick=()=>socket.emit('reset');$('claim').onclick=()=>socket.emit('bingo');
-socket.on('room-created',d=>{const r=d.room;role='moderator';roomCode=r.code;moderatorToken=d.moderatorToken;localStorage.setItem('bingoModeratorToken',moderatorToken);localStorage.setItem('bingoModeratorRoom',roomCode);show('moderator');$('mCode').textContent=r.code;$('mMode').textContent=r.modeLabel;renderPlayers(r.players);renderHistory(r.history);qr(r.code)});
+socket.on('room-created',d=>{const r=d.room||d;role='moderator';roomCode=r.code||'';moderatorToken=d.moderatorToken||moderatorToken||'';if(moderatorToken)localStorage.setItem('bingoModeratorToken',moderatorToken);if(roomCode)localStorage.setItem('bingoModeratorRoom',roomCode);show('moderator');$('mCode').textContent=roomCode||'—';$('mMode').textContent=r.modeLabel||'Una fila';renderPlayers(r.players||[]);renderHistory(r.history||[]);if(roomCode)qr(roomCode)});
 socket.on('moderator-auth-error',m=>{$('modErr').textContent=m;});
 socket.on('joined',d=>{
  const r=d.room;role='player';roomCode=r.code;board=d.board;marks=new Set(d.marks||[12]);playerToken=d.playerToken;
@@ -20,7 +20,7 @@ socket.on('joined',d=>{
  renderBoard();
 });
 socket.on('moderator-resumed',d=>{
- const r=d.room;role='moderator';roomCode=r.code;moderatorToken=d.moderatorToken;
+ const r=d.room||d;role='moderator';roomCode=r.code||'';moderatorToken=d.moderatorToken||moderatorToken;
  show('moderator');$('mCode').textContent=r.code;$('mMode').textContent=r.modeLabel;renderPlayers(r.players);renderHistory(r.history);qr(r.code);
  $('mStatus').textContent=r.started?'Partida en curso':'Esperando jugadores';
  $('gameMode').value=r.mode;$('gameMode').disabled=!!r.started;$('start').disabled=!!r.started;
