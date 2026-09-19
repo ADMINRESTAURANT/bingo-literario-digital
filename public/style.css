@@ -18,3 +18,10 @@ button:disabled,select:disabled{opacity:.6;cursor:not-allowed}
 .celebration span{position:absolute;top:-12vh;font-size:clamp(20px,4vw,42px);animation:confettiFall linear forwards;filter:drop-shadow(0 0 7px rgba(49,210,105,.8))}
 @keyframes confettiFall{0%{transform:translateY(-10vh) rotate(0deg) scale(.7);opacity:0}10%{opacity:1}100%{transform:translateY(120vh) rotate(900deg) scale(1.15);opacity:.15}}
 @keyframes winnerPop{0%{transform:scale(.65);opacity:0}70%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+
+.player-scorebar{display:flex;justify-content:space-between;gap:10px;align-items:center;background:#eefaf2;border:1px solid #bde7c8;color:#176b39;border-radius:14px;padding:10px 14px;margin:0 0 12px;font-weight:800}
+.guess-correct{background:#b8f2c9!important;border-color:#1e9d52!important;color:#0d6330!important;box-shadow:0 0 0 4px rgba(30,157,82,.16),0 0 24px rgba(30,157,82,.35)!important;animation:guessPulse .45s ease}
+.guess-wrong{background:#ffd2d6!important;border-color:#c93648!important;color:#8d1725!important;box-shadow:0 0 0 4px rgba(201,54,72,.12)!important;animation:guessShake .35s ease}
+@keyframes guessPulse{0%{transform:scale(.92)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
+@keyframes guessShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+@media(max-width:760px){.player-scorebar{flex-direction:column;align-items:flex-start}}
