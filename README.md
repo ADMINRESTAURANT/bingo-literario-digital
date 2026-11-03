@@ -1,22 +1,17 @@
-# Bingo Literario Digital
+# Millonario Financiero
 
-Juego en tiempo real para usar desde celulares, computador o tablet.
+Juego educativo web sobre las unidades 1, 2 y 3 de Epistemología de las Finanzas.
 
-## Funciones
-- Código de sala y QR.
-- Moderador y jugadores.
-- Cartones aleatorios 5x5.
-- 24 conceptos literarios.
-- Pistas y respuestas.
-- Validación automática de fila, columna o diagonal.
-- Nueva ronda.
-- PWA instalable en el celular.
+- 15 rondas, preguntas con cuatro opciones y equipos.
+- Cronómetro, comodines y premios virtuales.
+- Sonidos de reloj, cuenta regresiva y reacciones del público.
+- Funciona en celulares y computadores.
 
-## Ejecutar localmente
+## Ejecutar
+
 ```bash
 npm install
 npm start
 ```
 
-## Publicar
-Este repositorio incluye `render.yaml` para desplegarlo como Web Service Node.js.
+Se mantiene la configuración original de Render para conservar el enlace público existente. No usa las salas ni el servidor de bingo.
